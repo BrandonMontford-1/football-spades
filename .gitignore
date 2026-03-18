@@ -3,6 +3,7 @@
 .expo-shared/
 dist/
 node_modules/
+npm-debug.*
 
 # iOS
 ios/
@@ -23,12 +24,19 @@ local.properties
 .env
 .env.local
 .env.production
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+*.log
 
 # OS
 .DS_Store
 Thumbs.db
+ehthumbs.db
+*.swp
+*.swo
+
+# IDE
+.vscode/
+*.code-workspace
+
+# Personal
+personal_notes.txt
+secrets.js
