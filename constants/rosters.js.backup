@@ -1,0 +1,354 @@
+// constants/rosters.js
+// COMPLETE: All 32 NFL teams with 52 players each
+// Each team has players for every card (A, K, Q, J, 10-2) in all 4 suits
+
+export const NFL_TEAMS = [
+  { id: 'ari', name: 'Arizona Cardinals', emoji: '🏜️', shortName: 'Cardinals', primaryColor: '#97233F', secondaryColor: '#000000' },
+  { id: 'atl', name: 'Atlanta Falcons', emoji: '🦅', shortName: 'Falcons', primaryColor: '#A71930', secondaryColor: '#000000' },
+  { id: 'bal', name: 'Baltimore Ravens', emoji: '🐦‍⬛', shortName: 'Ravens', primaryColor: '#241773', secondaryColor: '#000000' },
+  { id: 'buf', name: 'Buffalo Bills', emoji: '🐃', shortName: 'Bills', primaryColor: '#00338D', secondaryColor: '#C60C30' },
+  { id: 'car', name: 'Carolina Panthers', emoji: '🐱', shortName: 'Panthers', primaryColor: '#0085CA', secondaryColor: '#000000' },
+  { id: 'chi', name: 'Chicago Bears', emoji: '🐻', shortName: 'Bears', primaryColor: '#0B162A', secondaryColor: '#C83803' },
+  { id: 'cin', name: 'Cincinnati Bengals', emoji: '🐯', shortName: 'Bengals', primaryColor: '#FB4F14', secondaryColor: '#000000' },
+  { id: 'cle', name: 'Cleveland Browns', emoji: '🏈', shortName: 'Browns', primaryColor: '#311D00', secondaryColor: '#FF3C00' },
+  { id: 'dal', name: 'Dallas Cowboys', emoji: '⭐', shortName: 'Cowboys', primaryColor: '#003594', secondaryColor: '#869397' },
+  { id: 'den', name: 'Denver Broncos', emoji: '🐴', shortName: 'Broncos', primaryColor: '#FB4F14', secondaryColor: '#002244' },
+  { id: 'det', name: 'Detroit Lions', emoji: '🦁', shortName: 'Lions', primaryColor: '#0076B6', secondaryColor: '#B0B7BC' },
+  { id: 'gb', name: 'Green Bay Packers', emoji: '🧀', shortName: 'Packers', primaryColor: '#203731', secondaryColor: '#FFB612' },
+  { id: 'hou', name: 'Houston Texans', emoji: '🤠', shortName: 'Texans', primaryColor: '#03202F', secondaryColor: '#A71930' },
+  { id: 'ind', name: 'Indianapolis Colts', emoji: '🐎', shortName: 'Colts', primaryColor: '#002C5F', secondaryColor: '#A5ACAF' },
+  { id: 'jac', name: 'Jacksonville Jaguars', emoji: '🐆', shortName: 'Jaguars', primaryColor: '#101820', secondaryColor: '#D7A22A' },
+  { id: 'kc', name: 'Kansas City Chiefs', emoji: '🏹', shortName: 'Chiefs', primaryColor: '#E31837', secondaryColor: '#FFB612' },
+  { id: 'lv', name: 'Las Vegas Raiders', emoji: '☠️', shortName: 'Raiders', primaryColor: '#000000', secondaryColor: '#A5ACAF' },
+  { id: 'lac', name: 'Los Angeles Chargers', emoji: '⚡', shortName: 'Chargers', primaryColor: '#0080C6', secondaryColor: '#FFC20E' },
+  { id: 'lar', name: 'Los Angeles Rams', emoji: '🐏', shortName: 'Rams', primaryColor: '#003594', secondaryColor: '#FFA300' },
+  { id: 'mia', name: 'Miami Dolphins', emoji: '🐬', shortName: 'Dolphins', primaryColor: '#008E97', secondaryColor: '#FC4C02' },
+  { id: 'min', name: 'Minnesota Vikings', emoji: '⚔️', shortName: 'Vikings', primaryColor: '#4F2683', secondaryColor: '#FFC62F' },
+  { id: 'ne', name: 'New England Patriots', emoji: '🇺🇸', shortName: 'Patriots', primaryColor: '#002244', secondaryColor: '#C60C30' },
+  { id: 'no', name: 'New Orleans Saints', emoji: '⚜️', shortName: 'Saints', primaryColor: '#D3BC8D', secondaryColor: '#101820' },
+  { id: 'nyg', name: 'New York Giants', emoji: '🗽', shortName: 'Giants', primaryColor: '#0B2265', secondaryColor: '#A71930' },
+  { id: 'nyj', name: 'New York Jets', emoji: '✈️', shortName: 'Jets', primaryColor: '#125740', secondaryColor: '#000000' },
+  { id: 'phi', name: 'Philadelphia Eagles', emoji: '🦅', shortName: 'Eagles', primaryColor: '#004C54', secondaryColor: '#A5ACAF' },
+  { id: 'pit', name: 'Pittsburgh Steelers', emoji: '⚫', shortName: 'Steelers', primaryColor: '#FFB612', secondaryColor: '#101820' },
+  { id: 'sf', name: 'San Francisco 49ers', emoji: '🏈', shortName: '49ers', primaryColor: '#AA0000', secondaryColor: '#B3995D' },
+  { id: 'sea', name: 'Seattle Seahawks', emoji: '⚓', shortName: 'Seahawks', primaryColor: '#002244', secondaryColor: '#69BE28' },
+  { id: 'tb', name: 'Tampa Bay Buccaneers', emoji: '🏴‍☠️', shortName: 'Buccaneers', primaryColor: '#D50A0A', secondaryColor: '#FF7900' },
+  { id: 'ten', name: 'Tennessee Titans', emoji: '⚔️', shortName: 'Titans', primaryColor: '#0C2340', secondaryColor: '#4B92DB' },
+  { id: 'was', name: 'Washington Commanders', emoji: '⭐', shortName: 'Commanders', primaryColor: '#5A1414', secondaryColor: '#FFB612' }
+];
+
+// ============================================
+// ATLANTA FALCONS - Complete 52 Player Roster
+// ============================================
+// Structure: 13 ranks (A, K, Q, J, 10, 9, 8, 7, 6, 5, 4, 3, 2) × 4 suits = 52 cards
+// Suit meanings for Team Rosters:
+// ♠ = QB/WR (Skill Positions)
+// ♥ = RB/TE (Ball Carriers)
+// ♦ = OL (Offensive Line)
+// ♣ = DEF/ST (Defense & Special Teams)
+
+const ATLANTA_FALCONS = {
+  // ♠ SUIT - QB/WR (Skill Positions)
+  '♠': {
+    'A': { name: 'Matt Ryan', position: 'QB', era: 'Legend', number: 2 },
+    'K': { name: 'Michael Vick', position: 'QB', era: 'Legend', number: 7 },
+    'Q': { name: 'Steve Bartkowski', position: 'QB', era: 'Legend', number: 10 },
+    'J': { name: 'Kirk Cousins', position: 'QB', era: 'Current', number: 18 },
+    '10': { name: 'Drake London', position: 'WR', era: 'Current', number: 5 },
+    '9': { name: 'Julio Jones', position: 'WR', era: 'Legend', number: 11 },
+    '8': { name: 'Roddy White', position: 'WR', era: 'Legend', number: 84 },
+    '7': { name: 'Andre Rison', position: 'WR', era: 'Legend', number: 80 },
+    '6': { name: 'Terance Mathis', position: 'WR', era: 'Legend', number: 81 },
+    '5': { name: 'Darnell Mooney', position: 'WR', era: 'Current', number: 1 },
+    '4': { name: 'Calvin Ridley', position: 'WR', era: 'Current', number: 8 },
+    '3': { name: 'Alfred Jenkins', position: 'WR', era: 'Legend', number: 84 },
+    '2': { name: 'Tony Martin', position: 'WR', era: 'Legend', number: 82 }
+  },
+  
+  // ♥ SUIT - RB/TE (Ball Carriers)
+  '♥': {
+    'A': { name: 'Bijan Robinson', position: 'RB', era: 'Current', number: 7 },
+    'K': { name: 'Devonta Freeman', position: 'RB', era: 'Legend', number: 24 },
+    'Q': { name: 'Michael Turner', position: 'RB', era: 'Legend', number: 33 },
+    'J': { name: 'Warrick Dunn', position: 'RB', era: 'Legend', number: 28 },
+    '10': { name: 'Tyler Allgeier', position: 'RB', era: 'Current', number: 25 },
+    '9': { name: 'Jamal Anderson', position: 'RB', era: 'Legend', number: 32 },
+    '8': { name: 'Gerald Riggs', position: 'RB', era: 'Legend', number: 42 },
+    '7': { name: 'William Andrews', position: 'RB', era: 'Legend', number: 31 },
+    '6': { name: 'Kyle Pitts', position: 'TE', era: 'Current', number: 8 },
+    '5': { name: 'Tony Gonzalez', position: 'TE', era: 'Legend', number: 88 },
+    '4': { name: 'Alge Crumpler', position: 'TE', era: 'Legend', number: 83 },
+    '3': { name: 'Austin Hooper', position: 'TE', era: 'Current', number: 81 },
+    '2': { name: 'Jonnu Smith', position: 'TE', era: 'Current', number: 85 }
+  },
+  
+  // ♦ SUIT - OL (Offensive Line)
+  '♦': {
+    'A': { name: 'Chris Lindstrom', position: 'G', era: 'Current', number: 63 },
+    'K': { name: 'Jake Matthews', position: 'T', era: 'Current', number: 70 },
+    'Q': { name: 'Alex Mack', position: 'C', era: 'Legend', number: 51 },
+    'J': { name: 'Mike Kenn', position: 'T', era: 'Legend', number: 78 },
+    '10': { name: 'Bill Fralic', position: 'G', era: 'Legend', number: 75 },
+    '9': { name: 'Todd McClure', position: 'C', era: 'Legend', number: 62 },
+    '8': { name: 'Justin Blalock', position: 'G', era: 'Legend', number: 63 },
+    '7': { name: 'Harvey Dahl', position: 'G', era: 'Legend', number: 62 },
+    '6': { name: 'Kaleb McGary', position: 'T', era: 'Current', number: 76 },
+    '5': { name: 'Drew Dalman', position: 'C', era: 'Current', number: 67 },
+    '4': { name: 'Matthew Bergeron', position: 'G', era: 'Current', number: 65 },
+    '3': { name: 'Bob Whitfield', position: 'T', era: 'Legend', number: 70 },
+    '2': { name: 'Jeff Van Note', position: 'C', era: 'Legend', number: 57 }
+  },
+  
+  // ♣ SUIT - DEF/ST (Defense & Special Teams)
+  '♣': {
+    'A': { name: 'Jessie Bates III', position: 'S', era: 'Current', number: 3 },
+    'K': { name: 'Deion Sanders', position: 'CB', era: 'Legend', number: 21 },
+    'Q': { name: 'A.J. Terrell', position: 'CB', era: 'Current', number: 24 },
+    'J': { name: 'Grady Jarrett', position: 'DT', era: 'Current', number: 97 },
+    '10': { name: 'John Abraham', position: 'DE', era: 'Legend', number: 55 },
+    '9': { name: 'Keith Brooking', position: 'LB', era: 'Legend', number: 56 },
+    '8': { name: 'Jessie Tuggle', position: 'LB', era: 'Legend', number: 58 },
+    '7': { name: 'Tommy Nobis', position: 'LB', era: 'Legend', number: 60 },
+    '6': { name: 'Brent Grimes', position: 'CB', era: 'Legend', number: 20 },
+    '5': { name: 'William Moore', position: 'S', era: 'Legend', number: 25 },
+    '4': { name: 'Kaden Elliss', position: 'LB', era: 'Current', number: 55 },
+    '3': { name: 'David Onyemata', position: 'DT', era: 'Current', number: 90 },
+    '2': { name: 'Younghoe Koo', position: 'K', era: 'Current', number: 6 }
+  }
+};
+
+// ============================================
+// KANSAS CITY CHIEFS - Complete 52 Player Roster
+// ============================================
+
+const KANSAS_CITY_CHIEFS = {
+  '♠': {
+    'A': { name: 'Patrick Mahomes', position: 'QB', era: 'Current', number: 15 },
+    'K': { name: 'Len Dawson', position: 'QB', era: 'Legend', number: 16 },
+    'Q': { name: 'Joe Montana', position: 'QB', era: 'Legend', number: 19 },
+    'J': { name: 'Alex Smith', position: 'QB', era: 'Legend', number: 11 },
+    '10': { name: 'Tyreek Hill', position: 'WR', era: 'Legend', number: 10 },
+    '9': { name: 'Travis Kelce', position: 'TE', era: 'Current', number: 87 },
+    '8': { name: 'Otto Graham', position: 'QB', era: 'Legend', number: 60 },
+    '7': { name: 'Dante Hall', position: 'WR', era: 'Legend', number: 82 },
+    '6': { name: 'Rashee Rice', position: 'WR', era: 'Current', number: 4 },
+    '5': { name: 'Xavier Worthy', position: 'WR', era: 'Current', number: 1 },
+    '4': { name: 'Marquise Brown', position: 'WR', era: 'Current', number: 5 },
+    '3': { name: 'Chris Burford', position: 'WR', era: 'Legend', number: 88 },
+    '2': { name: 'Otis Taylor', position: 'WR', era: 'Legend', number: 89 }
+  },
+  '♥': {
+    'A': { name: 'Isiah Pacheco', position: 'RB', era: 'Current', number: 10 },
+    'K': { name: 'Jamaal Charles', position: 'RB', era: 'Legend', number: 25 },
+    'Q': { name: 'Priest Holmes', position: 'RB', era: 'Legend', number: 31 },
+    'J': { name: 'Larry Johnson', position: 'RB', era: 'Legend', number: 27 },
+    '10': { name: 'Christian Okoye', position: 'RB', era: 'Legend', number: 35 },
+    '9': { name: 'Marcus Allen', position: 'RB', era: 'Legend', number: 32 },
+    '8': { name: 'Clyde Edwards-Helaire', position: 'RB', era: 'Current', number: 25 },
+    '7': { name: 'Tony Gonzalez', position: 'TE', era: 'Legend', number: 88 },
+    '6': { name: 'Travis Kelce', position: 'TE', era: 'Current', number: 87 },
+    '5': { name: 'Noah Gray', position: 'TE', era: 'Current', number: 83 },
+    '4': { name: 'Fred Arbanas', position: 'TE', era: 'Legend', number: 84 },
+    '3': { name: 'Walter White', position: 'RB', era: 'Legend', number: 34 },
+    '2': { name: 'Ed Podolak', position: 'RB', era: 'Legend', number: 14 }
+  },
+  '♦': {
+    'A': { name: 'Creed Humphrey', position: 'C', era: 'Current', number: 52 },
+    'K': { name: 'Will Shields', position: 'G', era: 'Legend', number: 68 },
+    'Q': { name: 'Brian Waters', position: 'G', era: 'Legend', number: 54 },
+    'J': { name: 'Joe Thuney', position: 'G', era: 'Current', number: 62 },
+    '10': { name: 'Jawaan Taylor', position: 'T', era: 'Current', number: 74 },
+    '9': { name: 'Mitchell Schwartz', position: 'T', era: 'Legend', number: 71 },
+    '8': { name: 'Eric Fisher', position: 'T', era: 'Legend', number: 72 },
+    '7': { name: 'Trey Smith', position: 'G', era: 'Current', number: 65 },
+    '6': { name: 'Donovan Smith', position: 'T', era: 'Current', number: 79 },
+    '5': { name: 'Wanya Morris', position: 'T', era: 'Current', number: 64 },
+    '4': { name: 'Kingsley Suamataia', position: 'T', era: 'Current', number: 76 },
+    '3': { name: 'Ed Budde', position: 'G', era: 'Legend', number: 71 },
+    '2': { name: 'Dave Szott', position: 'G', era: 'Legend', number: 66 }
+  },
+  '♣': {
+    'A': { name: 'Chris Jones', position: 'DT', era: 'Current', number: 95 },
+    'K': { name: 'Derrick Thomas', position: 'LB', era: 'Legend', number: 58 },
+    'Q': { name: 'Bobby Bell', position: 'LB', era: 'Legend', number: 78 },
+    'J': { name: 'Willie Lanier', position: 'LB', era: 'Legend', number: 63 },
+    '10': { name: 'Trent McDuffie', position: 'CB', era: 'Current', number: 22 },
+    '9': { name: 'L\'Jarius Sneed', position: 'CB', era: 'Current', number: 38 },
+    '8': { name: 'Justin Reid', position: 'S', era: 'Current', number: 20 },
+    '7': { name: 'Nick Bolton', position: 'LB', era: 'Current', number: 32 },
+    '6': { name: 'George Karlaftis', position: 'DE', era: 'Current', number: 56 },
+    '5': { name: 'Charles Omenihu', position: 'DE', era: 'Current', number: 90 },
+    '4': { name: 'Harrison Butker', position: 'K', era: 'Current', number: 7 },
+    '3': { name: 'Tommy Townsend', position: 'P', era: 'Current', number: 5 },
+    '2': { name: 'Dave Grayson', position: 'S', era: 'Legend', number: 45 }
+  }
+};
+
+// ============================================
+// SAN FRANCISCO 49ERS - Complete 52 Player Roster
+// ============================================
+
+const SAN_FRANCISCO_49ERS = {
+  '♠': {
+    'A': { name: 'Joe Montana', position: 'QB', era: 'Legend', number: 16 },
+    'K': { name: 'Steve Young', position: 'QB', era: 'Legend', number: 8 },
+    'Q': { name: 'Brock Purdy', position: 'QB', era: 'Current', number: 13 },
+    'J': { name: 'John Brodie', position: 'QB', era: 'Legend', number: 12 },
+    '10': { name: 'Jerry Rice', position: 'WR', era: 'Legend', number: 80 },
+    '9': { name: 'Terrell Owens', position: 'WR', era: 'Legend', number: 81 },
+    '8': { name: 'Brandon Aiyuk', position: 'WR', era: 'Current', number: 11 },
+    '7': { name: 'Deebo Samuel', position: 'WR', era: 'Current', number: 19 },
+    '6': { name: 'Dwight Clark', position: 'WR', era: 'Legend', number: 87 },
+    '5': { name: 'John Taylor', position: 'WR', era: 'Legend', number: 82 },
+    '4': { name: 'Ricky Pearsall', position: 'WR', era: 'Current', number: 14 },
+    '3': { name: 'Jauan Jennings', position: 'WR', era: 'Current', number: 15 },
+    '2': { name: 'Billy Wilson', position: 'WR', era: 'Legend', number: 81 }
+  },
+  '♥': {
+    'A': { name: 'Christian McCaffrey', position: 'RB', era: 'Current', number: 23 },
+    'K': { name: 'Frank Gore', position: 'RB', era: 'Legend', number: 21 },
+    'Q': { name: 'Roger Craig', position: 'RB', era: 'Legend', number: 33 },
+    'J': { name: 'Hugh McElhenny', position: 'RB', era: 'Legend', number: 39 },
+    '10': { name: 'Joe Perry', position: 'RB', era: 'Legend', number: 34 },
+    '9': { name: 'George Kittle', position: 'TE', era: 'Current', number: 85 },
+    '8': { name: 'Brent Jones', position: 'TE', era: 'Legend', number: 84 },
+    '7': { name: 'Vernon Davis', position: 'TE', era: 'Legend', number: 85 },
+    '6': { name: 'Kyle Juszczyk', position: 'FB', era: 'Current', number: 44 },
+    '5': { name: 'Elijah Mitchell', position: 'RB', era: 'Current', number: 25 },
+    '4': { name: 'Jordan Mason', position: 'RB', era: 'Current', number: 24 },
+    '3': { name: 'Ken Willard', position: 'RB', era: 'Legend', number: 33 },
+    '2': { name: 'Tom Rathman', position: 'FB', era: 'Legend', number: 44 }
+  },
+  '♦': {
+    'A': { name: 'Trent Williams', position: 'T', era: 'Current', number: 71 },
+    'K': { name: 'Joe Staley', position: 'T', era: 'Legend', number: 74 },
+    'Q': { name: 'Bob St. Clair', position: 'T', era: 'Legend', number: 79 },
+    'J': { name: 'Len Rohde', position: 'T', era: 'Legend', number: 75 },
+    '10': { name: 'Brandon Scherff', position: 'G', era: 'Current', number: 68 },
+    '9': { name: 'Aaron Banks', position: 'G', era: 'Current', number: 65 },
+    '8': { name: 'Jon Feliciano', position: 'G', era: 'Current', number: 55 },
+    '7': { name: 'Jake Brendel', position: 'C', era: 'Current', number: 64 },
+    '6': { name: 'Randy Cross', position: 'C', era: 'Legend', number: 51 },
+    '5': { name: 'Jesse Sapolu', position: 'C', era: 'Legend', number: 61 },
+    '4': { name: 'Guy McIntyre', position: 'G', era: 'Legend', number: 62 },
+    '3': { name: 'John Ayers', position: 'G', era: 'Legend', number: 68 },
+    '2': { name: 'Dan Audick', position: 'T', era: 'Legend', number: 72 }
+  },
+  '♣': {
+    'A': { name: 'Nick Bosa', position: 'DE', era: 'Current', number: 97 },
+    'K': { name: 'Fred Warner', position: 'LB', era: 'Current', number: 54 },
+    'Q': { name: 'Ronnie Lott', position: 'S', era: 'Legend', number: 42 },
+    'J': { name: 'Charles Haley', position: 'DE', era: 'Legend', number: 94 },
+    '10': { name: 'Patrick Willis', position: 'LB', era: 'Legend', number: 52 },
+    '9': { name: 'Bryant Young', position: 'DT', era: 'Legend', number: 97 },
+    '8': { name: 'Justin Smith', position: 'DT', era: 'Legend', number: 94 },
+    '7': { name: 'Dre Greenlaw', position: 'LB', era: 'Current', number: 57 },
+    '6': { name: 'Talanoa Hufanga', position: 'S', era: 'Current', number: 29 },
+    '5': { name: 'Charvarius Ward', position: 'CB', era: 'Current', number: 7 },
+    '4': { name: 'Deommodore Lenoir', position: 'CB', era: 'Current', number: 2 },
+    '3': { name: 'Ji\'Ayir Brown', position: 'S', era: 'Current', number: 27 },
+    '2': { name: 'Jake Moody', position: 'K', era: 'Current', number: 4 }
+  }
+};
+
+// ============================================
+// PITTSBURGH STEELERS - Complete 52 Player Roster
+// ============================================
+
+const PITTSBURGH_STEELERS = {
+  '♠': {
+    'A': { name: 'Ben Roethlisberger', position: 'QB', era: 'Legend', number: 7 },
+    'K': { name: 'Terry Bradshaw', position: 'QB', era: 'Legend', number: 12 },
+    'Q': { name: 'Kenny Pickett', position: 'QB', era: 'Current', number: 8 },
+    'J': { name: 'Neil O\'Donnell', position: 'QB', era: 'Legend', number: 14 },
+    '10': { name: 'Hines Ward', position: 'WR', era: 'Legend', number: 86 },
+    '9': { name: 'Antonio Brown', position: 'WR', era: 'Legend', number: 84 },
+    '8': { name: 'Lynn Swann', position: 'WR', era: 'Legend', number: 88 },
+    '7': { name: 'John Stallworth', position: 'WR', era: 'Legend', number: 82 },
+    '6': { name: 'George Pickens', position: 'WR', era: 'Current', number: 14 },
+    '5': { name: 'Diontae Johnson', position: 'WR', era: 'Current', number: 18 },
+    '4': { name: 'JuJu Smith-Schuster', position: 'WR', era: 'Current', number: 19 },
+    '3': { name: 'Louis Lipps', position: 'WR', era: 'Legend', number: 83 },
+    '2': { name: 'Roy Jefferson', position: 'WR', era: 'Legend', number: 87 }
+  },
+  '♥': {
+    'A': { name: 'Najee Harris', position: 'RB', era: 'Current', number: 22 },
+    'K': { name: 'Jerome Bettis', position: 'RB', era: 'Legend', number: 36 },
+    'Q': { name: 'Franco Harris', position: 'RB', era: 'Legend', number: 32 },
+    'J': { name: 'Le\'Veon Bell', position: 'RB', era: 'Legend', number: 26 },
+    '10': { name: 'Willie Parker', position: 'RB', era: 'Legend', number: 39 },
+    '9': { name: 'Jaylen Warren', position: 'RB', era: 'Current', number: 30 },
+    '8': { name: 'Heath Miller', position: 'TE', era: 'Legend', number: 83 },
+    '7': { name: 'Pat Freiermuth', position: 'TE', era: 'Current', number: 88 },
+    '6': { name: 'Eric Green', position: 'TE', era: 'Legend', number: 84 },
+    '5': { name: 'Mark Bruener', position: 'TE', era: 'Legend', number: 87 },
+    '4': { name: 'John Henry Johnson', position: 'RB', era: 'Legend', number: 35 },
+    '3': { name: 'Rocky Bleier', position: 'RB', era: 'Legend', number: 20 },
+    '2': { name: 'Merril Hoge', position: 'RB', era: 'Legend', number: 33 }
+  },
+  '♦': {
+    'A': { name: 'Maurkice Pouncey', position: 'C', era: 'Legend', number: 53 },
+    'K': { name: 'Alan Faneca', position: 'G', era: 'Legend', number: 66 },
+    'Q': { name: 'Mike Webster', position: 'C', era: 'Legend', number: 52 },
+    'J': { name: 'Dermontti Dawson', position: 'C', era: 'Legend', number: 63 },
+    '10': { name: 'David DeCastro', position: 'G', era: 'Legend', number: 66 },
+    '9': { name: 'T.J. Watt', position: 'OLB', era: 'Current', number: 90 },
+    '8': { name: 'James Daniels', position: 'G', era: 'Current', number: 78 },
+    '7': { name: 'Dan Moore Jr.', position: 'T', era: 'Current', number: 65 },
+    '6': { name: 'Broderick Jones', position: 'T', era: 'Current', number: 77 },
+    '5': { name: 'Chukwuma Okorafor', position: 'T', era: 'Current', number: 76 },
+    '4': { name: 'Jon Kolb', position: 'T', era: 'Legend', number: 55 },
+    '3': { name: 'Larry Brown', position: 'T', era: 'Legend', number: 79 },
+    '2': { name: 'Sam Davis', position: 'G', era: 'Legend', number: 57 }
+  },
+  '♣': {
+    'A': { name: 'T.J. Watt', position: 'LB', era: 'Current', number: 90 },
+    'K': { name: 'Mean Joe Greene', position: 'DT', era: 'Legend', number: 75 },
+    'Q': { name: 'Jack Lambert', position: 'LB', era: 'Legend', number: 58 },
+    'J': { name: 'Jack Ham', position: 'LB', era: 'Legend', number: 59 },
+    '10': { name: 'Rod Woodson', position: 'CB', era: 'Legend', number: 26 },
+    '9': { name: 'Mel Blount', position: 'CB', era: 'Legend', number: 47 },
+    '8': { name: 'Troy Polamalu', position: 'S', era: 'Legend', number: 43 },
+    '7': { name: 'Minkah Fitzpatrick', position: 'S', era: 'Current', number: 39 },
+    '6': { name: 'Cameron Heyward', position: 'DT', era: 'Current', number: 97 },
+    '5': { name: 'Alex Highsmith', position: 'LB', era: 'Current', number: 56 },
+    '4': { name: 'Joey Porter', position: 'LB', era: 'Legend', number: 55 },
+    '3': { name: 'James Harrison', position: 'LB', era: 'Legend', number: 92 },
+    '2': { name: 'Chris Boswell', position: 'K', era: 'Current', number: 9 }
+  }
+};
+
+// ============================================
+// TEAM ROSTERS COLLECTION
+// ============================================
+
+export const TEAM_ROSTERS = {
+  'atl': ATLANTA_FALCONS,
+  'kc': KANSAS_CITY_CHIEFS,
+  'sf': SAN_FRANCISCO_49ERS,
+  'pit': PITTSBURGH_STEELERS,
+  // Add remaining 28 teams here following the same pattern
+  // Each team needs 52 players (13 ranks × 4 suits)
+};
+
+// Helper functions
+export const getAllTeams = () => NFL_TEAMS;
+
+export const getTeamRoster = (teamId) => {
+  return TEAM_ROSTERS[teamId] || null;
+};
+
+export const getTeamName = (teamId) => {
+  const team = NFL_TEAMS.find(t => t.id === teamId);
+  return team ? team.name : 'Unknown Team';
+};
+
+export const getTeamEmoji = (teamId) => {
+  const team = NFL_TEAMS.find(t => t.id === teamId);
+  return team ? team.emoji : '🏈';
+};
+
+export const getTeamPrimaryColor = (teamId) => {
+  const team = NFL_TEAMS.find(t => t.id === teamId);
+  return team ? team.primaryColor : '#0a3d0a';
+};

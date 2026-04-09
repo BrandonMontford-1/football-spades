@@ -1,53 +1,69 @@
+// components/ScoreHistory.js
+// Uses actual coach names from score history — no more hardcoded BELI/TOML/RIVA
+
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS, TYPOGRAPHY, SPACING, RADIUS } from '../constants/theme';
 
 const ScoreHistory = ({ history }) => {
-  if (!history || history.length === 0) {
-    return null;
-  }
+  if (!history?.length) return null;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>📊 GAME HISTORY</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.historyContainer}>
+        <View style={styles.row}>
           {history.map((entry, index) => (
             <LinearGradient
               key={index}
-              colors={['rgba(0,0,0,0.8)', 'rgba(0,20,0,0.9)']}
-              style={styles.historyCard}
+              colors={['rgba(0,0,0,0.82)', 'rgba(0,20,0,0.9)']}
+              style={styles.card}
             >
-              <Text style={styles.roundText}>ROUND {entry.round}</Text>
-              <Text style={styles.timeText}>{entry.timestamp}</Text>
+              <Text style={styles.roundText}>Q{entry.round}</Text>
+              {entry.timestamp && (
+                <Text style={styles.timeText}>{entry.timestamp}</Text>
+              )}
               <View style={styles.divider} />
-              {entry.scores.map((score, i) => (
-                <View key={i} style={styles.scoreRow}>
-                  <Text style={[
-                    styles.playerName,
-                    i === 0 ? styles.youText : null
-                  ]}>
-                    {i === 0 ? "YOU" : 
-                     i === 1 ? "BELI" :
-                     i === 2 ? "TOML" : "RIVA"}
-                  </Text>
-                  <Text style={[
-                    styles.scoreValue,
-                    score.score > 0 ? styles.positiveScore : 
-                    score.score < 0 ? styles.negativeScore : styles.neutralScore
-                  ]}>
-                    {score.score > 0 ? `+${score.score}` : score.score}
-                  </Text>
-                  <Text style={styles.bidText}>
-                    (B:{score.bid} T:{score.tricks})
+
+              {entry.scores.map((score, i) => {
+                const isYou = i === 0;
+                // Use actual name from history, trim to fit
+                const displayName = isYou
+                  ? 'YOU'
+                  : (score.name || 'COACH').substring(0, 5).toUpperCase();
+
+                return (
+                  <View key={i} style={styles.scoreRow}>
+                    <Text style={[styles.playerName, isYou && styles.youText]}>
+                      {displayName}
+                    </Text>
+                    <Text style={[
+                      styles.scoreValue,
+                      score.score > 0 ? styles.positiveScore :
+                      score.score < 0 ? styles.negativeScore :
+                      styles.neutralScore,
+                    ]}>
+                      {score.score > 0 ? `+${score.score}` : score.score}
+                    </Text>
+                    {/* Show bid/tricks if available (classic mode) */}
+                    {score.bid !== undefined && (
+                      <Text style={styles.bidText}>
+                        B:{score.bid ?? '?'} T:{score.tricks ?? 0}
+                      </Text>
+                    )}
+                  </View>
+                );
+              })}
+
+              {/* Bag total if any score has bags */}
+              {entry.scores.some(s => s.bags > 0) && (
+                <View style={styles.bagRow}>
+                  <Text style={styles.bagText}>
+                    👜 {entry.scores.reduce((a, s) => a + (s.bags || 0), 0)} bags
                   </Text>
                 </View>
-              ))}
-              <View style={styles.bagRow}>
-                <Text style={styles.bagText}>
-                  👜 {entry.scores.map(s => s.bags).reduce((a, b) => a + b, 0)} total bags
-                </Text>
-              </View>
+              )}
             </LinearGradient>
           ))}
         </View>
@@ -58,47 +74,42 @@ const ScoreHistory = ({ history }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 5,
-    paddingHorizontal: 5,
+    marginHorizontal: SPACING.sm,
+    marginBottom: 4,
   },
   title: {
-    color: '#ffd700',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    letterSpacing: 1,
+    ...TYPOGRAPHY.label,
+    color: COLORS.gold,
+    fontSize: 9,
+    marginBottom: 4,
   },
-  historyContainer: {
+  row: {
     flexDirection: 'row',
     paddingVertical: 2,
   },
-  historyCard: {
-    width: 160,
-    padding: 10,
-    marginRight: 8,
-    borderRadius: 10,
+  card: {
+    width: 150,
+    padding: 8,
+    marginRight: 6,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
-    borderColor: '#ffd700',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
+    borderColor: COLORS.borderGold,
   },
   roundText: {
-    color: '#ffd700',
+    color: COLORS.gold,
     fontSize: 11,
-    fontWeight: 'bold',
+    fontWeight: '800',
     letterSpacing: 0.5,
   },
   timeText: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 8,
-    marginBottom: 5,
+    color: COLORS.textMuted,
+    fontSize: 7,
+    marginBottom: 3,
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255,215,0,0.3)',
+    backgroundColor: COLORS.borderGold,
+    opacity: 0.4,
     marginVertical: 4,
   },
   scoreRow: {
@@ -108,47 +119,42 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   playerName: {
-    color: '#87CEEB',
+    color: COLORS.textSub,
     fontSize: 9,
-    width: 35,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    width: 38,
   },
   youText: {
-    color: '#ffd700',
-    fontWeight: 'bold',
+    color: COLORS.gold,
   },
   scoreValue: {
     fontSize: 11,
-    fontWeight: 'bold',
-    width: 40,
+    fontWeight: '800',
+    width: 36,
     textAlign: 'right',
   },
-  positiveScore: {
-    color: '#4CAF50',
-  },
-  negativeScore: {
-    color: '#ff6b6b',
-  },
-  neutralScore: {
-    color: '#fff',
-  },
+  positiveScore: { color: COLORS.win },
+  negativeScore:  { color: COLORS.lose },
+  neutralScore:   { color: COLORS.textPrimary },
   bidText: {
-    color: 'rgba(255,255,255,0.5)',
+    color: COLORS.textMuted,
     fontSize: 7,
-    width: 45,
+    width: 42,
     textAlign: 'right',
   },
   bagRow: {
-    marginTop: 5,
+    marginTop: 4,
     paddingTop: 4,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,215,0,0.2)',
+    borderTopColor: COLORS.border,
   },
   bagText: {
-    color: 'rgba(255,215,0,0.6)',
+    color: COLORS.warning,
     fontSize: 8,
     textAlign: 'center',
+    opacity: 0.8,
   },
 });
 
 export default ScoreHistory;
+

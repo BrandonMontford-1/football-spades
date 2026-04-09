@@ -1,153 +1,120 @@
+// components/Card.js
+// Premium NFL card — dark luxury × stadium aesthetic
+// Uses theme.js design system throughout
+
 import React, { useRef } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Animated,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { COLORS, SHADOWS, RADIUS, getSuitColor } from '../constants/theme';
 
-// Safe animation helper
-const safeInterpolate = (value, inputRange, outputRange, fallback = outputRange[0]) => {
-  if (!value || typeof value.interpolate !== 'function') {
-    return fallback;
-  }
-  return value.interpolate({
-    inputRange: inputRange,
-    outputRange: outputRange,
-  });
-};
+// ── Suit helpers ──────────────────────────────────────────────────────────────
+const getSuitGradient = (suit) => ({
+  '♠': [COLORS.fieldMid, COLORS.field],
+  '♥': ['#8b0000', '#4a0000'],
+  '♦': ['#003a8c', '#001a4a'],
+  '♣': ['#0a3d1a', '#051a0a'],
+})[suit] ?? [COLORS.fieldMid, COLORS.field];
 
+const getEraLabel = (era) =>
+  era === 'Legend' ? '🏆 HOF' : '⭐ STAR';
+
+// ── Face-down card ────────────────────────────────────────────────────────────
+const CardBack = () => (
+  <View style={styles.opponentCardWrap}>
+    <LinearGradient colors={[COLORS.cardBack1, COLORS.cardBack2]} style={styles.opponentCard}>
+      <Text style={styles.opponentIcon}>🏈</Text>
+      <Text style={styles.opponentQ}>?</Text>
+    </LinearGradient>
+  </View>
+);
+
+// ── Main card component ───────────────────────────────────────────────────────
 const Card = ({ card, onPress, isPlayable = true, isOpponent = false }) => {
-  // Animation values
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim  = useRef(new Animated.Value(1)).current;
+  const liftAnim   = useRef(new Animated.Value(0)).current;
+
+  if (isOpponent || !card) return <CardBack />;
+
+  const suitColor = getSuitColor(card.suit);
 
   const handlePressIn = () => {
     if (!isPlayable) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Animated.spring(scaleAnim, {
-      toValue: 0.95,
-      friction: 5,
-      useNativeDriver: true,
-    }).start();
-    Animated.timing(rotateAnim, {
-      toValue: 1,
-      duration: 100,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.spring(scaleAnim, { toValue: 1.08, friction: 6, useNativeDriver: true }),
+      Animated.timing(liftAnim,  { toValue: 1, duration: 120, useNativeDriver: true }),
+    ]).start();
   };
 
   const handlePressOut = () => {
     if (!isPlayable) return;
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      friction: 3,
-      useNativeDriver: true,
-    }).start();
-    Animated.timing(rotateAnim, {
-      toValue: 0,
-      duration: 100,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.spring(scaleAnim, { toValue: 1, friction: 4, useNativeDriver: true }),
+      Animated.timing(liftAnim,  { toValue: 0, duration: 120, useNativeDriver: true }),
+    ]).start();
   };
 
   const handlePress = () => {
     if (!isPlayable) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onPress(card);
+    onPress?.(card);
   };
 
-  // Opponent card (face down)
-  if (isOpponent) {
-    return (
-      <Animated.View
-        style={[
-          styles.opponentCardContainer,
-          {
-            transform: [
-              { scale: scaleAnim },
-              {
-                rotateZ: safeInterpolate(rotateAnim, [0, 1], ['0deg', '2deg'], '0deg')
-              }
-            ]
-          }
-        ]}
-      >
-        <LinearGradient
-          colors={['#2a2a2a', '#1a1a1a', '#0a0a0a']}
-          style={styles.opponentCard}
-        >
-          <Text style={styles.opponentCardIcon}>🏈</Text>
-          <Text style={styles.opponentCardQuestion}>?</Text>
-        </LinearGradient>
-      </Animated.View>
-    );
-  }
-
-  // Player card gradient based on suit
-  const getCardGradient = () => {
-    switch(card?.suit) {
-      case '♠': return ['#1a1a1a', '#2d2d2d', '#000000'];
-      case '♥': return ['#8b0000', '#a52a2a', '#6b0000'];
-      case '♦': return ['#0066cc', '#003366', '#000066'];
-      case '♣': return ['#006400', '#228b22', '#004d00'];
-      default: return ['#333', '#444', '#222'];
-    }
-  };
+  const shadowOpacity = liftAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] });
+  const shadowRadius  = liftAnim.interpolate({ inputRange: [0, 1], outputRange: [4,  14] });
 
   return (
     <Animated.View
-      style={{
-        transform: [
-          { scale: scaleAnim },
-          {
-            rotateZ: safeInterpolate(rotateAnim, [0, 1], ['0deg', '1deg'], '0deg')
-          }
-        ]
-      }}
+      style={[
+        styles.cardWrap,
+        {
+          transform: [{ scale: scaleAnim }],
+          shadowOpacity,
+          shadowRadius,
+        },
+        !isPlayable && styles.cardDisabled,
+      ]}
     >
       <TouchableOpacity
-        activeOpacity={0.9}
+        activeOpacity={0.85}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={handlePress}
         disabled={!isPlayable}
       >
-        <LinearGradient
-          colors={getCardGradient()}
-          style={styles.cardContainer}
-        >
-          <View style={styles.cardBorder}>
-            {/* Top left corner */}
-            <View style={styles.cardCorner}>
-              <Text style={styles.cardValue}>{card?.value}</Text>
-              <Text style={styles.cardSuit}>{card?.suit}</Text>
-            </View>
+        <LinearGradient colors={getSuitGradient(card.suit)} style={styles.card}>
+          {/* Gold border overlay */}
+          <View style={[styles.goldBorder, isPlayable && styles.goldBorderActive]} />
 
-            {/* Center player info */}
-            <View style={styles.cardCenter}>
-              <Text style={styles.cardPlayer} numberOfLines={2}>
-                {card?.player}
+          {/* Top-left corner */}
+          <View style={styles.cornerTL}>
+            <Text style={[styles.cornerValue, { color: suitColor }]}>{card.value}</Text>
+            <Text style={[styles.cornerSuit,  { color: suitColor }]}>{card.suit}</Text>
+          </View>
+
+          {/* Center content */}
+          <View style={styles.centerContent}>
+            <Text style={[styles.centerSuit, { color: suitColor, opacity: 0.18 }]}>{card.suit}</Text>
+            <View style={styles.playerInfo}>
+              <Text style={styles.playerName} numberOfLines={2} adjustsFontSizeToFit>
+                {card.player}
               </Text>
-              <View style={styles.cardPositionBadge}>
-                <Text style={styles.cardPositionText}>
-                  {card?.position}
-                </Text>
+              <View style={[styles.positionBadge, { borderColor: suitColor }]}>
+                <Text style={[styles.positionText, { color: suitColor }]}>{card.position}</Text>
               </View>
-              <Text style={styles.cardEra}>
-                {card?.era === 'Legend' ? '🏆 HOF' : '⭐ STAR'}
-              </Text>
-            </View>
-
-            {/* Bottom right corner */}
-            <View style={[styles.cardCorner, styles.cardCornerBottom]}>
-              <Text style={styles.cardValue}>{card?.value}</Text>
-              <Text style={styles.cardSuit}>{card?.suit}</Text>
+              <Text style={styles.eraLabel}>{getEraLabel(card.era)}</Text>
             </View>
           </View>
+
+          {/* Bottom-right corner (rotated) */}
+          <View style={styles.cornerBR}>
+            <Text style={[styles.cornerValue, { color: suitColor, transform: [{ rotate: '180deg' }] }]}>{card.value}</Text>
+            <Text style={[styles.cornerSuit,  { color: suitColor, transform: [{ rotate: '180deg' }] }]}>{card.suit}</Text>
+          </View>
+
+          {/* Playable glow line */}
+          {isPlayable && <View style={[styles.glowLine, { backgroundColor: suitColor }]} />}
         </LinearGradient>
       </TouchableOpacity>
     </Animated.View>
@@ -155,108 +122,127 @@ const Card = ({ card, onPress, isPlayable = true, isOpponent = false }) => {
 };
 
 const styles = StyleSheet.create({
-  cardContainer: {
-    width: 70,
-    height: 100,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#ffd700',
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  cardBorder: {
-    flex: 1,
-    padding: 6,
-    position: 'relative',
-  },
-  cardCorner: {
-    position: 'absolute',
-    top: 4,
-    left: 4,
-    alignItems: 'center',
-  },
-  cardCornerBottom: {
-    top: undefined,
-    bottom: 4,
-    right: 4,
-    left: undefined,
-    transform: [{ rotate: '180deg' }],
-  },
-  cardValue: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  cardSuit: {
-    color: '#ffd700',
-    fontSize: 14,
-    marginTop: -2,
-  },
-  cardCenter: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cardPlayer: {
-    color: '#fff',
-    fontSize: 9,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 3,
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  cardPositionBadge: {
-    backgroundColor: '#ffd700',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 8,
-    marginVertical: 2,
-  },
-  cardPositionText: {
-    color: '#000',
-    fontSize: 7,
-    fontWeight: 'bold',
-  },
-  cardEra: {
-    color: '#87CEEB',
-    fontSize: 6,
-    marginTop: 2,
-  },
-  
-  opponentCardContainer: {
-    width: 45,
-    height: 65,
+  // ── Face-down ───────────────────────────────────────────────────────────────
+  opponentCardWrap: {
+    width: 44,
+    height: 62,
     marginHorizontal: 2,
+    borderRadius: RADIUS.card,
+    ...SHADOWS.card,
+    shadowColor: '#000',
   },
   opponentCard: {
     flex: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.card,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderGold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  opponentIcon: { fontSize: 18, opacity: 0.9 },
+  opponentQ:    { color: COLORS.goldDark, fontSize: 8, marginTop: 2, opacity: 0.7 },
+
+  // ── Player card ─────────────────────────────────────────────────────────────
+  cardWrap: {
+    marginHorizontal: 3,
+    borderRadius: RADIUS.card,
+    shadowColor: COLORS.gold,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  card: {
+    width: 72,
+    height: 102,
+    borderRadius: RADIUS.card,
+    overflow: 'hidden',
+    position: 'relative',
+    padding: 5,
+    justifyContent: 'space-between',
+  },
+  cardDisabled: { opacity: 0.5 },
+
+  goldBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: RADIUS.card,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderGold,
+  },
+  goldBorderActive: {
+    borderColor: COLORS.gold,
     borderWidth: 2,
-    borderColor: '#ffd700',
+  },
+
+  // Corners
+  cornerTL: { alignItems: 'flex-start' },
+  cornerBR: { alignItems: 'flex-end' },
+  cornerValue: {
+    fontSize: 15,
+    fontWeight: '900',
+    lineHeight: 16,
+  },
+  cornerSuit: {
+    fontSize: 13,
+    fontWeight: '900',
+    lineHeight: 14,
+  },
+
+  // Center
+  centerContent: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
   },
-  opponentCardIcon: {
-    color: '#ffd700',
-    fontSize: 20,
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+  centerSuit: {
+    position: 'absolute',
+    fontSize: 52,
+    fontWeight: '900',
   },
-  opponentCardQuestion: {
-    color: '#ffd700',
+  playerInfo: {
+    alignItems: 'center',
+    zIndex: 2,
+    paddingHorizontal: 2,
+  },
+  playerName: {
+    color: COLORS.textPrimary,
     fontSize: 8,
-    marginTop: 2,
+    fontWeight: '800',
+    textAlign: 'center',
+    letterSpacing: 0.2,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+    marginBottom: 3,
+    maxWidth: 60,
+  },
+  positionBadge: {
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    marginBottom: 2,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  positionText: {
+    fontSize: 6,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  eraLabel: {
+    color: COLORS.textMuted,
+    fontSize: 6,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+
+  // Playable glow line at bottom
+  glowLine: {
+    position: 'absolute',
+    bottom: 0,
+    left: 8,
+    right: 8,
+    height: 2,
+    borderRadius: 1,
     opacity: 0.7,
   },
 });

@@ -1,280 +1,365 @@
-import React, { useState } from 'react';
+// components/WelcomeScreen.js
+// Premium dark luxury × NFL stadium welcome flow
+// Uses theme.js design system throughout
+// 3-step flow: Name → Card Style → Settings
+
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Modal,
+  TouchableOpacity,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path } from 'react-native-svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Feather } from '@expo/vector-icons';
+import { CARD_TYPES } from '../constants/cardTypes';
+import { getAllTeams } from '../constants/rosters';
+import { NameStep } from './welcome/NameStep';
+import { CardStyleStep } from './welcome/CardStyleStep';
+import { SettingsStep } from './welcome/SettingsStep';
+import {
+  COLORS,
+  GRADIENTS,
+  TYPOGRAPHY,
+  SPACING,
+  RADIUS,
+  SHADOWS,
+} from '../constants/theme';
 
+// ── Card back & table configs ─────────────────────────────────────────────────
+export const CARD_BACKS = [
+  { id: 'football', name: '🏈 Football', color: '#8B4513', pattern: '🏈', textColor: COLORS.gold },
+  { id: 'stars',    name: '⭐ Stars',    color: '#1a237e', pattern: '⭐', textColor: COLORS.gold },
+  { id: 'trophy',   name: '🏆 Trophy',   color: '#b8860b', pattern: '🏆', textColor: COLORS.gold },
+  { id: 'classic',  name: '♠ Classic',   color: '#2c1810', pattern: '♠',  textColor: COLORS.gold },
+  { id: 'spades',   name: '♠ Spades',    color: '#0a2f4a', pattern: '♠',  textColor: COLORS.gold },
+];
+
+export const TABLE_THEMES = [
+  { id: 'grass',   name: '🏟️ Grass',   colors: COLORS.classicGrad },
+  { id: 'stadium', name: '🏟️ Stadium', colors: ['#0A1A2A', '#051A2A', '#051015'] },
+  { id: 'leather', name: '🏈 Leather', colors: ['#1A0A05', '#0F0503', '#080302'] },
+  { id: 'night',   name: '🌙 Night',   colors: ['#050505', '#0A0A0A', '#0F0F0F'] },
+];
+
+// ─── WelcomeScreen ────────────────────────────────────────────────────────────
 const WelcomeScreen = ({ onStart }) => {
-  const [playerName, setPlayerName] = useState('');
-  const [showRules, setShowRules] = useState(false);
+  const [step,          setStep]          = useState('name');
+  const [playerName,    setPlayerName]    = useState('');
+  const [showRules,     setShowRules]     = useState(false);
+  const [showSettings,  setShowSettings]  = useState(false);
+  const [gameMode,      setGameMode]      = useState('classic');
+  const [difficulty,    setDifficulty]    = useState('medium');
+  const [bagPenalty,    setBagPenalty]    = useState(true);
+  const [winTarget,     setWinTarget]     = useState(70);
+  const [blindNil,      setBlindNil]      = useState(false);
+  const [cardBack,      setCardBack]      = useState('football');
+  const [tableTheme,    setTableTheme]    = useState('grass');
+  const [showTutorial,  setShowTutorial]  = useState(true);
+  const [cardType,      setCardType]      = useState(CARD_TYPES.ALL_STARS.id);
+  const [selectedTeam,  setSelectedTeam]  = useState(null);
+  const [allTeams,      setAllTeams]      = useState([]);
 
-  const handleStart = () => {
-    onStart(playerName.trim() || "Coach");
+  useEffect(() => {
+    loadSettings();
+    setAllTeams(getAllTeams());
+  }, []);
+
+  // ── Persistence ──────────────────────────────────────────────────────────────
+  const loadSettings = async () => {
+    try {
+      const get = (k) => AsyncStorage.getItem(k);
+      const [
+        savedName, savedMode, savedDiff, savedBagPen, savedWin,
+        savedNil, savedBack, savedTheme, savedTut, savedCT, savedTeam,
+      ] = await Promise.all([
+        get('playerName'), get('gameMode'), get('difficulty'), get('bagPenalty'),
+        get('winTarget'), get('blindNil'), get('cardBack'), get('tableTheme'),
+        get('showTutorial'), get('cardType'), get('selectedTeam'),
+      ]);
+
+      if (savedName)   setPlayerName(savedName);
+      if (savedMode)   setGameMode(savedMode);
+      if (savedDiff)   setDifficulty(savedDiff);
+      if (savedBagPen) setBagPenalty(savedBagPen === 'true');
+      if (savedWin)    setWinTarget(parseInt(savedWin));
+      if (savedNil)    setBlindNil(savedNil === 'true');
+      if (savedBack)   setCardBack(savedBack);
+      if (savedTheme)  setTableTheme(savedTheme);
+      if (savedTut)    setShowTutorial(savedTut === 'true');
+      if (savedCT)     setCardType(savedCT);
+      if (savedTeam)   setSelectedTeam(savedTeam);
+    } catch (e) {
+      console.log('Settings load error:', e);
+    }
   };
 
-  const renderRules = () => (
-    <View style={styles.rulesContainer}>
-      <Text style={styles.rulesTitle}>🏈 COACH'S PLAYBOOK</Text>
-      
-      <View style={styles.ruleSection}>
-        <Text style={styles.ruleHeader}>📋 BIDDING</Text>
-        <Text style={styles.ruleText}>• Each player predicts how many tricks (touchdowns) they'll win</Text>
-        <Text style={styles.ruleText}>• Bid 0-13 • 0 = SHUTOUT ATTEMPT</Text>
-      </View>
+  const saveSettings = async () => {
+    try {
+      const pairs = [
+        ['playerName',   playerName.trim() || 'Coach'],
+        ['gameMode',     gameMode],
+        ['difficulty',   difficulty],
+        ['bagPenalty',   bagPenalty.toString()],
+        ['winTarget',    winTarget.toString()],
+        ['blindNil',     blindNil.toString()],
+        ['cardBack',     cardBack],
+        ['tableTheme',   tableTheme],
+        ['showTutorial', showTutorial.toString()],
+        ['cardType',     cardType],
+        ...(selectedTeam ? [['selectedTeam', selectedTeam]] : []),
+      ];
+      await Promise.all(pairs.map(([k, v]) => AsyncStorage.setItem(k, v)));
+    } catch (e) {
+      console.log('Settings save error:', e);
+    }
+  };
 
-      <View style={styles.ruleSection}>
-        <Text style={styles.ruleHeader}>🏆 SCORING</Text>
-        <Text style={styles.ruleText}>• Win a trick = +7 points (TOUCHDOWN!)</Text>
-        <Text style={styles.ruleText}>• Make your bid = No adjustment</Text>
-        <Text style={styles.ruleText}>• Miss your bid = -7 per trick short (OFFSIDES)</Text>
-        <Text style={styles.ruleText}>• Extra tricks beyond bid = +3 each (FIELD GOAL)</Text>
-        <Text style={styles.ruleText}>• Successful shutout (bid 0, take 0) = +14</Text>
-        <Text style={styles.ruleText}>• Failed shutout = -14</Text>
-      </View>
+  const handleStart = () => {
+    saveSettings();
+    onStart(playerName.trim() || 'Coach', gameMode, {
+      difficulty, bagPenalty, winTarget, blindNil,
+      cardBack, tableTheme, showTutorial, cardType, selectedTeam,
+    });
+  };
 
-      <View style={styles.ruleSection}>
-        <Text style={styles.ruleHeader}>👜 PENALTIES (BAGS)</Text>
-        <Text style={styles.ruleText}>• Each extra trick beyond your bid = 1 bag</Text>
-        <Text style={styles.ruleText}>• 10 bags = -14 point penalty (PERSONAL FOUL)</Text>
-      </View>
+  const handleNext = () => {
+    if (step === 'name')           setStep('cardStyle');
+    else if (step === 'cardStyle') setStep('settings');
+  };
 
-      <View style={styles.ruleSection}>
-        <Text style={styles.ruleHeader}>♠️ SECONDARY (SPADES)</Text>
-        <Text style={styles.ruleText}>• Spades beat all other suits</Text>
-        <Text style={styles.ruleText}>• Cannot lead with spades until "broken"</Text>
-        <Text style={styles.ruleText}>• Spades break when played on another suit</Text>
-      </View>
+  const handleBack = () => {
+    if (step === 'cardStyle') setStep('name');
+    else if (step === 'settings') setStep('cardStyle');
+  };
 
-      <View style={styles.ruleSection}>
-        <Text style={styles.ruleHeader}>🏆 WINNING</Text>
-        <Text style={styles.ruleText}>• First to 70 points wins</Text>
-        <Text style={styles.ruleText}>• Game ends immediately</Text>
-      </View>
+  // ── Progress dots ─────────────────────────────────────────────────────────────
+  const stepOrder = ['name', 'cardStyle', 'settings'];
+  const stepIdx   = stepOrder.indexOf(step);
 
-      <TouchableOpacity 
-        style={styles.gotItButton}
-        onPress={() => setShowRules(false)}
-      >
-        <Text style={styles.gotItText}>GOT IT</Text>
-      </TouchableOpacity>
+  const renderProgress = () => (
+    <View style={styles.progressRow}>
+      {stepOrder.map((s, i) => (
+        <View key={s} style={[styles.progressDot, i <= stepIdx && styles.progressDotActive]} />
+      ))}
     </View>
   );
 
-  if (showRules) {
-    return (
-      <LinearGradient colors={['#0a3d0a', '#1a4d1a']} style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {renderRules()}
-        </ScrollView>
-      </LinearGradient>
-    );
-  }
+  // ── Rules modal ───────────────────────────────────────────────────────────────
+  const renderRules = () => (
+    <Modal visible={showRules} transparent animationType="fade">
+      <View style={styles.modalBackdrop}>
+        <LinearGradient
+          colors={['rgba(5,13,5,0.98)', 'rgba(0,0,0,0.96)']}
+          style={styles.modalPanel}
+        >
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text style={styles.modalTitle}>🏈 COACH'S PLAYBOOK</Text>
+
+            {[
+              {
+                header: '🎮 GAME MODES',
+                items: [
+                  { sub: '🏈 CLASSIC', lines: ['Bidding (0–13 tricks)', 'Bags penalty at 10', 'Nil: ±14 pts', `First to ${winTarget} wins`] },
+                  { sub: '⚡ ARCADE',  lines: ['No bidding', 'Ace=8 • Spade=3 • Other=6', '90s clock + 5s turn timer', 'Highest score wins'] },
+                  { sub: '🏈 SEASON',  lines: ['Pick your NFL team', '8-game regular season', 'Top 4 make playoffs', 'Win the championship!'] },
+                ],
+              },
+              {
+                header: '🎴 CARD TYPES',
+                items: [
+                  { lines: ['🏈 All-Stars — current stars + legends', '🏆 Team Rosters — your favorite NFL team', '🛡️ Defense Only — CB, S, LB, DL', '⚡ Offense Only — QB, RB, WR, TE', '🏅 Legends Only — Hall of Fame only'] },
+                ],
+              },
+              {
+                header: '♠️ SPADES RULES',
+                items: [
+                  { lines: ['Spades beat all other suits (trump)', 'Cannot lead spades until broken', 'Must follow suit if you have it'] },
+                ],
+              },
+            ].map(({ header, items }) => (
+              <View key={header} style={styles.modalSection}>
+                <Text style={styles.modalSectionHeader}>{header}</Text>
+                <View style={styles.modalDivider} />
+                {items.map((item, i) => (
+                  <View key={i}>
+                    {item.sub && <Text style={styles.modalSubHeader}>{item.sub}</Text>}
+                    {item.lines.map((line, j) => (
+                      <Text key={j} style={styles.modalLine}>• {line}</Text>
+                    ))}
+                  </View>
+                ))}
+              </View>
+            ))}
+
+            <TouchableOpacity style={styles.modalBtn} onPress={() => setShowRules(false)} activeOpacity={0.8}>
+              <LinearGradient colors={[COLORS.fieldLight, COLORS.field]} style={styles.modalBtnInner}>
+                <Text style={styles.modalBtnText}>GOT IT</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </ScrollView>
+        </LinearGradient>
+      </View>
+    </Modal>
+  );
+
+  // ── Settings modal ────────────────────────────────────────────────────────────
+  const renderSettingsModal = () => (
+    <Modal visible={showSettings} transparent animationType="fade">
+      <View style={styles.modalBackdrop}>
+        <LinearGradient
+          colors={['rgba(5,13,5,0.98)', 'rgba(0,0,0,0.96)']}
+          style={styles.modalPanel}
+        >
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text style={styles.modalTitle}>⚙️ SETTINGS</Text>
+            <SettingsStep
+              gameMode={gameMode}
+              difficulty={difficulty}        setDifficulty={setDifficulty}
+              bagPenalty={bagPenalty}        setBagPenalty={setBagPenalty}
+              winTarget={winTarget}          setWinTarget={setWinTarget}
+              blindNil={blindNil}            setBlindNil={setBlindNil}
+              cardBack={cardBack}            setCardBack={setCardBack}
+              tableTheme={tableTheme}        setTableTheme={setTableTheme}
+              showTutorial={showTutorial}    setShowTutorial={setShowTutorial}
+              CARD_BACKS={CARD_BACKS}
+              TABLE_THEMES={TABLE_THEMES}
+            />
+            <TouchableOpacity style={styles.modalBtn} onPress={() => setShowSettings(false)} activeOpacity={0.8}>
+              <LinearGradient colors={[COLORS.fieldLight, COLORS.field]} style={styles.modalBtnInner}>
+                <Text style={styles.modalBtnText}>SAVE & CLOSE</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </ScrollView>
+        </LinearGradient>
+      </View>
+    </Modal>
+  );
+
+  const currentTheme = TABLE_THEMES.find(t => t.id === tableTheme) ?? TABLE_THEMES[0];
 
   return (
-    <LinearGradient colors={['#0a3d0a', '#1a4d1a']} style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.content}
+    <LinearGradient colors={currentTheme.colors} style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.inner}
       >
-        {/* Football Logo */}
-        <View style={styles.logoContainer}>
-          <Svg width="120" height="120" viewBox="0 0 100 100">
-            <Path d="M30 20 Q50 10, 70 20 L70 80 Q50 90, 30 80 Z" fill="#8B4513" stroke="#FFD700" strokeWidth="4" />
-            <Path d="M45 30 L55 30 M45 40 L55 40 M45 50 L55 50 M45 60 L55 60" stroke="#FFD700" strokeWidth="3" />
-          </Svg>
-          <Text style={styles.title}>FOOTBALL SPADES</Text>
-          <Text style={styles.subtitle}>COACH'S EDITION</Text>
-        </View>
+        {step === 'settings' && (
+          <TouchableOpacity style={styles.gearBtn} onPress={() => setShowSettings(true)}>
+            <Feather name="settings" size={20} color={COLORS.gold} />
+          </TouchableOpacity>
+        )}
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>ENTER YOUR NAME:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Coach"
-            placeholderTextColor="rgba(255,255,255,0.5)"
-            value={playerName}
-            onChangeText={setPlayerName}
-            maxLength={20}
-            autoCapitalize="words"
+        <TouchableOpacity style={styles.rulesBtn} onPress={() => setShowRules(true)}>
+          <Feather name="book-open" size={18} color={COLORS.textSub} />
+        </TouchableOpacity>
+
+        {renderProgress()}
+
+        {step === 'name' && (
+          <NameStep
+            playerName={playerName}
+            setPlayerName={setPlayerName}
+            gameMode={gameMode}
+            setGameMode={setGameMode}
+            onNext={handleNext}
           />
-        </View>
+        )}
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.rulesButton}
-            onPress={() => setShowRules(true)}
-          >
-            <Text style={styles.rulesButtonText}>📋 GAME RULES</Text>
-          </TouchableOpacity>
+        {step === 'cardStyle' && (
+          <CardStyleStep
+            cardType={cardType}
+            setCardType={setCardType}
+            selectedTeam={selectedTeam}
+            setSelectedTeam={setSelectedTeam}
+            allTeams={allTeams}
+            onNext={handleNext}
+            onBack={handleBack}
+            gameMode={gameMode}
+          />
+        )}
 
-          <TouchableOpacity 
-            style={styles.startButton}
-            onPress={handleStart}
-          >
-            <LinearGradient colors={['#4CAF50', '#2E7D32']} style={styles.startButtonGradient}>
-              <Text style={styles.startButtonText}>KICKOFF 🏈</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+        {step === 'settings' && (
+          <SettingsStep
+            gameMode={gameMode}
+            difficulty={difficulty}        setDifficulty={setDifficulty}
+            bagPenalty={bagPenalty}        setBagPenalty={setBagPenalty}
+            winTarget={winTarget}          setWinTarget={setWinTarget}
+            blindNil={blindNil}            setBlindNil={setBlindNil}
+            cardBack={cardBack}            setCardBack={setCardBack}
+            tableTheme={tableTheme}        setTableTheme={setTableTheme}
+            showTutorial={showTutorial}    setShowTutorial={setShowTutorial}
+            CARD_BACKS={CARD_BACKS}
+            TABLE_THEMES={TABLE_THEMES}
+            onBack={handleBack}
+            onStart={handleStart}
+          />
+        )}
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Version 2.0.0 • COACH'S EDITION</Text>
-        </View>
+        <Text style={styles.version}>v4.0.0 • COACH'S EDITION</Text>
       </KeyboardAvoidingView>
+
+      {renderRules()}
+      {renderSettingsModal()}
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  container: { flex: 1 },
+  inner: {
     flex: 1,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'space-between',
-    padding: 20,
-    paddingTop: 60,
-    paddingBottom: 30,
-  },
-  scrollContent: {
-    flexGrow: 1,
     justifyContent: 'center',
-    padding: 20,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: 40,
   },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 40,
+  gearBtn: {
+    position: 'absolute', top: 52, right: SPACING.lg,
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center', justifyContent: 'center',
+    zIndex: 10, borderWidth: 1, borderColor: COLORS.borderGold,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFD700',
-    marginTop: 20,
-    textShadowColor: '#000',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 5,
-    letterSpacing: 2,
+  rulesBtn: {
+    position: 'absolute', top: 52, left: SPACING.lg,
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center', justifyContent: 'center',
+    zIndex: 10, borderWidth: 1, borderColor: COLORS.border,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#87CEEB',
-    marginTop: 5,
-    letterSpacing: 3,
-    fontWeight: '600',
+  progressRow: {
+    flexDirection: 'row', justifyContent: 'center',
+    gap: 8, marginBottom: SPACING.lg, marginTop: 60,
   },
-  inputContainer: {
-    marginBottom: 30,
+  progressDot: { width: 28, height: 4, borderRadius: 2, backgroundColor: COLORS.border },
+  progressDotActive: { backgroundColor: COLORS.gold },
+  version: {
+    textAlign: 'center', color: COLORS.textMuted,
+    fontSize: 9, letterSpacing: 1, marginTop: SPACING.md,
   },
-  label: {
-    color: '#FFD700',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    letterSpacing: 1,
+  modalBackdrop: {
+    flex: 1, justifyContent: 'center', alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.88)',
   },
-  input: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderWidth: 2,
-    borderColor: '#FFD700',
-    borderRadius: 12,
-    padding: 15,
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: '600',
+  modalPanel: {
+    width: '88%', maxHeight: '82%',
+    borderRadius: RADIUS.xl, padding: SPACING.lg,
+    borderWidth: 1, borderColor: COLORS.borderGold, ...SHADOWS.panel,
   },
-  buttonContainer: {
-    gap: 15,
-  },
-  rulesButton: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderWidth: 2,
-    borderColor: '#87CEEB',
-    borderRadius: 12,
-    padding: 15,
-    alignItems: 'center',
-  },
-  rulesButtonText: {
-    color: '#87CEEB',
-    fontSize: 16,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-  },
-  startButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    elevation: 5,
-  },
-  startButtonGradient: {
-    padding: 18,
-    alignItems: 'center',
-  },
-  startButtonText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: 2,
-  },
-  footer: {
-    alignItems: 'center',
-    marginTop: 40,
-  },
-  footerText: {
-    color: 'rgba(255,255,255,0.3)',
-    fontSize: 10,
-  },
-  rulesContainer: {
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 3,
-    borderColor: '#FFD700',
-  },
-  rulesTitle: {
-    color: '#FFD700',
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-    letterSpacing: 2,
-  },
-  ruleSection: {
-    marginBottom: 20,
-  },
-  ruleHeader: {
-    color: '#87CEEB',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
-  ruleText: {
-    color: '#fff',
-    fontSize: 12,
-    lineHeight: 18,
-    marginLeft: 10,
-    marginBottom: 4,
-  },
-  gotItButton: {
-    backgroundColor: '#4CAF50',
-    padding: 15,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  gotItText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-  },
+  modalTitle: { ...TYPOGRAPHY.h1, color: COLORS.gold, textAlign: 'center', marginBottom: SPACING.md, fontSize: 20 },
+  modalSection: { marginBottom: SPACING.md },
+  modalSectionHeader: { ...TYPOGRAPHY.h2, color: COLORS.info, fontSize: 12, marginBottom: 6 },
+  modalDivider: { height: 1, backgroundColor: COLORS.borderGold, opacity: 0.4, marginBottom: 8 },
+  modalSubHeader: { ...TYPOGRAPHY.bodySmall, color: COLORS.gold, fontWeight: '700', marginTop: 6, marginBottom: 2 },
+  modalLine: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSub, lineHeight: 18, marginLeft: 4, marginBottom: 1 },
+  modalBtn: { borderRadius: RADIUS.pill, overflow: 'hidden', marginTop: SPACING.md },
+  modalBtnInner: { paddingVertical: 12, alignItems: 'center' },
+  modalBtnText: { ...TYPOGRAPHY.h2, color: COLORS.textPrimary, letterSpacing: 1.5, fontSize: 13 },
 });
 
 export default WelcomeScreen;
